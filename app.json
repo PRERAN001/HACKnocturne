@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "GhostVerifier",
+    "slug": "ghost-verifier",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0F172A"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Ghost Verifier to access your camera to record business verification videos.",
+          "microphonePermission": "Allow Ghost Verifier to access your microphone for video recording."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Ghost Verifier to access your location to verify the business address.",
+          "locationWhenInUsePermission": "Allow Ghost Verifier to access your location to verify the business address."
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSMotionUsageDescription": "Motion data is used to detect device tampering during verification.",
+        "NSCameraUsageDescription": "Camera is required to record business verification videos.",
+        "NSMicrophoneUsageDescription": "Microphone is required for video recording.",
+        "NSLocationWhenInUseUsageDescription": "Location is required to verify the business address."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0F172A"
+      },
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    }
+  }
+}
