@@ -24,6 +24,20 @@ const DOC_TYPES = [
     required: true,
   },
   {
+    id      : 'shop_license',
+    title   : 'Shop / Trade License',
+    subtitle: 'Municipal shop act license or trade license',
+    icon    : '🏪',
+    required: true,
+  },
+  {
+    id      : 'business_reg',
+    title   : 'Business Registration',
+    subtitle: 'Certificate of Incorporation, MOA, or Partnership deed',
+    icon    : '📋',
+    required: true,
+  },
+  {
     id      : 'owner_id',
     title   : 'Owner / Director Photo ID',
     subtitle: 'Aadhaar, PAN, Passport or Driving Licence',
@@ -32,8 +46,8 @@ const DOC_TYPES = [
   },
   {
     id      : 'utility',
-    title   : 'Address Proof (Optional)',
-    subtitle: 'Electricity bill, Lease deed, or Bank statement',
+    title   : 'Utility Bill',
+    subtitle: 'Electricity, water, or gas bill for address proof',
     icon    : '🏠',
     required: false,
   },
@@ -165,7 +179,7 @@ export default function DocumentScreen({ route, navigation }) {
 
   const handleContinue = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    navigation.navigate('Capture', {
+    navigation.navigate('Signboard', {
       ...params,
       documents: captured,
     });
@@ -198,7 +212,7 @@ export default function DocumentScreen({ route, navigation }) {
 
         {/* Onboarding Steps */}
         <View style={s.stepsRow}>
-          {['Business Info', 'Documents', 'Live Video', 'AI Result'].map((step, i) => (
+          {['Business Info', 'Documents', 'Signboard', 'Exterior', 'More…'].map((step, i) => (
             <View key={step} style={s.stepItem}>
               <View style={[s.stepCircle, i === 1 && s.stepCircleActive, i === 0 && s.stepCircleDone]}>
                 <Text style={[s.stepNum, (i === 0 || i === 1) && s.stepNumActive]}>
@@ -243,7 +257,7 @@ export default function DocumentScreen({ route, navigation }) {
           disabled={!allRequiredCaptured}
           activeOpacity={0.8}
         >
-          <Text style={s.continueBtnText}>Continue to Live Recording  →</Text>
+          <Text style={s.continueBtnText}>Continue to Signboard Capture  →</Text>
         </TouchableOpacity>
 
         {!allRequiredCaptured && (
