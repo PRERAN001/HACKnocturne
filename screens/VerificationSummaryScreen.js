@@ -36,6 +36,26 @@ const BUSINESS_CATEGORY_LABELS = {
   OTHER        : 'Other',
 };
 
+const WORKING_DAYS_LABELS = {
+  MON_FRI  : 'Monday – Friday',
+  MON_SAT  : 'Monday – Saturday',
+  ALL_DAYS : 'Monday – Sunday (All days)',
+  TUE_SUN  : 'Tuesday – Sunday',
+  WEEKENDS : 'Weekends only (Sat–Sun)',
+  CUSTOM   : 'Custom schedule',
+};
+
+const WORKING_HOURS_LABELS = {
+  '06:00-14:00': '6:00 AM – 2:00 PM',
+  '08:00-16:00': '8:00 AM – 4:00 PM',
+  '09:00-17:00': '9:00 AM – 5:00 PM',
+  '09:00-18:00': '9:00 AM – 6:00 PM',
+  '10:00-19:00': '10:00 AM – 7:00 PM',
+  '10:00-20:00': '10:00 AM – 8:00 PM',
+  '12:00-20:00': '12:00 PM – 8:00 PM',
+  '00:00-23:59': '24 Hours',
+};
+
 const DOC_LABELS = {
   gst_cert    : { icon: '📄', label: 'GST Certificate' },
   shop_license: { icon: '🏪', label: 'Shop / Trade License' },
@@ -239,8 +259,8 @@ export default function VerificationSummaryScreen({ route, navigation }) {
             {bizPhone    && <InfoRow label="Business Phone" value={`+91 ${bizPhone}`} />}
             {bizEmail    && <InfoRow label="Business Email" value={bizEmail} />}
             {bizCategory && <InfoRow label="Category" value={BUSINESS_CATEGORY_LABELS[bizCategory] || bizCategory} />}
-            {workingDays && <InfoRow label="Working Days"  value={workingDays} />}
-            {workingHours&& <InfoRow label="Working Hours" value={workingHours} />}
+            {workingDays && <InfoRow label="Working Days"  value={WORKING_DAYS_LABELS[workingDays] || workingDays} />}
+            {workingHours&& <InfoRow label="Working Hours" value={WORKING_HOURS_LABELS[workingHours] || workingHours} />}
             {website     && <InfoRow label="Website"       value={website} />}
           </View>
         </EvidenceSection>

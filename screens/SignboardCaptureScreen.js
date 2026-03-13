@@ -240,7 +240,7 @@ export default function SignboardCaptureScreen({ route, navigation }) {
             </View>
             <View style={s.ocrItem}>
               <Text style={s.ocrDot}>●</Text>
-              <Text style={s.ocrText}>JPEG format optimised for text extraction</Text>
+              <Text style={s.ocrText}>JPEG format optimized for text extraction</Text>
             </View>
             <View style={s.ocrItem}>
               <Text style={s.ocrDot}>●</Text>

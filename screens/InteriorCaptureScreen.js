@@ -34,14 +34,14 @@ const INTERIOR_SLOTS = [
     title  : 'Shelves / Storage',
     subtitle: 'Display shelving units, filing cabinets, or storage areas',
     icon   : '🗄️',
-    hint   : 'Capture labelled shelves or organised storage clearly',
+    hint   : 'Capture labeled shelves or organized storage clearly',
   },
   {
     id     : 'products',
     title  : 'Products / Inventory',
     subtitle: 'Show products, stock, or display items if applicable',
     icon   : '📦',
-    hint   : 'Include branded packaging or labelled stock if available',
+    hint   : 'Include branded packaging or labeled stock if available',
   },
   {
     id     : 'equipment',

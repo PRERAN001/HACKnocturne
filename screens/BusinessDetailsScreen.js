@@ -54,6 +54,8 @@ const TIME_OPTIONS = [
   { label: '24 Hours',            value: '00:00-23:59' },
 ];
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // ── Mini dropdown ─────────────────────────────────────────────
 function Dropdown({ label, options, selected, onSelect }) {
   const [open, setOpen] = useState(false);
@@ -105,7 +107,7 @@ export default function BusinessDetailsScreen({ route, navigation }) {
 
   const canProceed =
     bizPhone.trim().length === 10 &&
-    bizEmail.trim().includes('@') &&
+    EMAIL_REGEX.test(bizEmail.trim()) &&
     category.length > 0 &&
     workingDays.length > 0 &&
     workingHours.length > 0;

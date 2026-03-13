@@ -200,7 +200,7 @@ export default function MapLocationScreen({ route, navigation }) {
                 <View style={s.accuracyRow}>
                   <Text style={s.accuracyDot}>●</Text>
                   <Text style={s.accuracyText}>
-                    GPS Accuracy: ±{Math.round(location.accuracy)} metres
+                    GPS Accuracy: ±{Math.round(location.accuracy)} meters
                   </Text>
                 </View>
               )}
