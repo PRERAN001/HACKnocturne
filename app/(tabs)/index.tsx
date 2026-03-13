@@ -92,57 +92,99 @@ function HomeView({ onStart }: { onStart: (id: string, name: string) => void }) 
   const canProceed = localId.trim().length > 0 && localName.trim().length > 0;
 
   return (
-    <SafeAreaView style={sHome.safe}>
-      <KeyboardAvoidingView
-        style={sHome.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <View style={sHome.header}>
-          <Text style={sHome.logo}>🔍</Text>
-          <Text style={sHome.title}>Ghost Verifier</Text>
-          <Text style={sHome.subtitle}>Active KYB Platform</Text>
-          <View style={sHome.badge}>
-            <Text style={sHome.badgeText}>Hardware-Locked Verification</Text>
-          </View>
+  <SafeAreaView className="flex-1 bg-slate-950">
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1 px-6 justify-center"
+    >
+
+      {/* Header */}
+      <View className="items-center mb-12">
+
+        <View className="w-20 h-20 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 items-center justify-center mb-5">
+          <Text className="text-4xl">🔍</Text>
         </View>
 
-        <View style={sHome.form}>
-          <Text style={sHome.label}>Business ID (GST / CIN)</Text>
+        <Text className="text-white text-3xl font-bold tracking-wide">
+          Ghost Verifier
+        </Text>
+
+        <Text className="text-slate-400 mt-2 text-sm">
+          Automated Business Verification
+        </Text>
+
+        <View className="mt-5 bg-indigo-500/10 border border-indigo-500/30 px-4 py-2 rounded-full">
+          <Text className="text-indigo-400 text-xs font-semibold tracking-wide">
+            Hardware Locked KYB
+          </Text>
+        </View>
+
+      </View>
+
+
+      {/* Card */}
+      <View className="bg-slate-900/70 border border-slate-800 rounded-2xl p-6">
+
+        {/* GST */}
+        <View className="mb-5">
+          <Text className="text-slate-300 mb-2 text-sm font-medium">
+            Business ID (GST / CIN)
+          </Text>
+
           <TextInput
-            style={sHome.input}
-            placeholder="e.g. GST27AAACR5055K1Z5"
-            placeholderTextColor="#475569"
+            className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-indigo-500"
+            placeholder="GST27AAACR5055K1Z5"
+            placeholderTextColor="#64748b"
             value={localId}
             onChangeText={setLocalId}
             autoCapitalize="characters"
             autoCorrect={false}
           />
+        </View>
 
-          <Text style={sHome.label}>Business Name</Text>
+        {/* Business Name */}
+        <View>
+          <Text className="text-slate-300 mb-2 text-sm font-medium">
+            Business Name
+          </Text>
+
           <TextInput
-            style={sHome.input}
-            placeholder="e.g. Global Tech Solutions Pvt Ltd"
-            placeholderTextColor="#475569"
+            className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-indigo-500"
+            placeholder="Global Tech Solutions Pvt Ltd"
+            placeholderTextColor="#64748b"
             value={localName}
             onChangeText={setLocalName}
             autoCorrect={false}
           />
         </View>
 
-        <TouchableOpacity
-          style={[sHome.btn, !canProceed && sHome.btnDisabled]}
-          onPress={() => onStart(localId.trim(), localName.trim())}
-          disabled={!canProceed}
-        >
-          <Text style={sHome.btnText}>Start Verification  →</Text>
-        </TouchableOpacity>
+      </View>
 
-        <Text style={sHome.hint}>
-          GPS + Camera + Motion sensors will activate on next screen
+
+      {/* Button */}
+      <TouchableOpacity
+        className={`mt-8 py-4 rounded-xl items-center shadow-lg ${
+          canProceed ? "bg-indigo-600" : "bg-slate-700"
+        }`}
+        onPress={() => onStart(localId.trim(), localName.trim())}
+        disabled={!canProceed}
+      >
+        <Text className="text-white font-semibold text-base tracking-wide">
+          Start Secure Verification
         </Text>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
+      </TouchableOpacity>
+
+
+      {/* Hint */}
+      <View className="mt-6 items-center">
+        <Text className="text-slate-500 text-xs text-center leading-5">
+          Camera • GPS • Motion sensors will activate next
+        </Text>
+      </View>
+
+    </KeyboardAvoidingView>
+  </SafeAreaView>
+);
 }
 
 // ───────────────────────────────────────────────────────────────

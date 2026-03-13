@@ -4,8 +4,8 @@
 //  UPDATE the API_URL to your Render backend URL
 // ═══════════════════════════════════════════════════════════════
 
-export const API_URL    = 'https://ghost-verifier.onrender.com';
-export const SOCKET_URL = 'https://ghost-verifier.onrender.com';
+export const API_URL    = 'https://ghost-verifier-u5di.onrender.com';
+export const SOCKET_URL = 'https://ghost-verifier-u5di.onrender.com';
 
 // Session ID generator
 export const generateSessionId = () =>
