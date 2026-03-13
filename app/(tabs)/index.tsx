@@ -8,7 +8,7 @@ import {
   SafeAreaView, KeyboardAvoidingView, Platform, Alert,
   ActivityIndicator, ScrollView
 } from 'react-native';
-
+import { useSession } from '../SessionContext';
 // Expo & External Imports
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import * as Location from 'expo-location';
@@ -26,21 +26,36 @@ import { API_URL, SOCKET_URL, generateSessionId } from '../../config';
 // ───────────────────────────────────────────────────────────────
 export default function IndexScreen() {
   const [currentScreen, setCurrentScreen] = useState('home'); 
+  const { setSessionId: setGlobalSessionId, setBusinessId: setGlobalBusinessId } = useSession();
   
   // Shared State
+  // businessId here is the real DB businessId (from login API), NOT the GST number
   const [businessId, setBusinessId] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [sessionId, setSessionId] = useState('');
   const [gpsStart, setGpsStart] = useState<GpsPoint | null>(null);
 
+  // Called after login when NO pending audit — proceed to camera
   const handleStartCapture = (id: string, name: string) => {
     setBusinessId(id);
     setBusinessName(name);
+    setGlobalBusinessId(id);
     setCurrentScreen('capture');
+  };
+
+  // Called after login when a pending audit IS found.
+  // Sets globalBusinessId so AuditOverlay (in _layout.tsx) triggers its Modal.
+  // Does NOT navigate away — the Modal overlays whatever screen is active.
+  const handlePendingAudit = (id: string, name: string) => {
+    setBusinessId(id);
+    setBusinessName(name);
+    setGlobalBusinessId(id);
+    // stay on 'home' — AuditOverlay covers the screen via its Modal
   };
 
   const handleCaptureComplete = (session: string, gps: { lat: number; lng: number } | null) => {
     setSessionId(session);
+    setGlobalSessionId(session);
     setGpsStart(gps);
     setCurrentScreen('result');
   };
@@ -49,12 +64,15 @@ export default function IndexScreen() {
     setBusinessId('');
     setBusinessName('');
     setSessionId('');
+    setGlobalSessionId(null);
+    // ✅ CHANGE: do NOT clear globalBusinessId on restart — the business is still
+    // the same logged-in entity, so AuditOverlay must keep listening for their audits
     setGpsStart(null);
     setCurrentScreen('home');
   };
 
   if (currentScreen === 'home') {
-    return <HomeView onStart={handleStartCapture} />;
+    return <HomeView onStart={handleStartCapture} onPendingAudit={handlePendingAudit} />;
   }
 
   if (currentScreen === 'capture') {
@@ -83,108 +101,162 @@ export default function IndexScreen() {
 }
 
 // ───────────────────────────────────────────────────────────────
-//  HOME VIEW
+//  HOME VIEW (Updated with Verification Logic)
 // ───────────────────────────────────────────────────────────────
-function HomeView({ onStart }: { onStart: (id: string, name: string) => void }) {
+function HomeView({
+  onStart,
+  onPendingAudit,
+}: {
+  onStart: (id: string, name: string) => void;
+  onPendingAudit: (id: string, name: string) => void;
+}) {
   const [localId, setLocalId] = useState('');
   const [localName, setLocalName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState('Verifying...');
+  const [error, setError] = useState(false);
 
-  const canProceed = localId.trim().length > 0 && localName.trim().length > 0;
+  const handleVerifyAndStart = async () => {
+    if (!localId || !localName) {
+      Alert.alert("Error", "Please enter both Business ID and Name");
+      return;
+    }
+
+    setIsLoading(true);
+    setLoadingMsg('Verifying business...');
+    setError(false);
+
+    try {
+      // Step 1: login — validate GST + name, get real businessId
+      const response = await fetch(`https://ghost-verifier01.onrender.com/api/sessions/login`, {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gstNumber: localId.trim(),
+          name: localName.trim()
+        })
+      });
+
+      if (response.status !== 200) {
+        setError(true);
+        Alert.alert("Verification Failed", "No business found with these details.");
+        return;
+      }
+
+      const data = await response.json();
+      const realBusinessId = data.businessId ?? localId.trim();
+      const realName = data.name ?? localName.trim();
+
+      // Step 2: BEFORE going to camera, check if this business already has
+      // a pending surprise audit. If yes, surface the audit overlay instead.
+      setLoadingMsg('Checking for pending audits...');
+      try {
+        const auditRes = await fetch(
+          `https://ghost-verifier01.onrender.com/api/audit/pending?businessId=${encodeURIComponent(realBusinessId)}`
+        );
+        if (auditRes.status === 200) {
+          const auditData = await auditRes.json();
+          if (auditData?.pending === true) {
+            // A live audit exists — hand off to AuditOverlay, do NOT start a new capture
+            onPendingAudit(realBusinessId, realName);
+            return;
+          }
+        }
+        // 404 or pending:false → no active audit, fall through to capture
+      } catch {
+        // Network hiccup on audit check — safe to proceed, AuditOverlay will
+        // catch it on its own mount poll once businessId is set in context
+      }
+
+      // Step 3: No pending audit — start normal verification capture
+      onStart(realBusinessId, realName);
+
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Network Error", "Unable to connect to the server.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-  <SafeAreaView className="flex-1 bg-slate-950">
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 px-6 justify-center"
-    >
-
-      {/* Header */}
-      <View className="items-center mb-12">
-
-        <View className="w-20 h-20 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 items-center justify-center mb-5">
-          <Text className="text-4xl">🔍</Text>
-        </View>
-
-        <Text className="text-white text-3xl font-bold tracking-wide">
-          Ghost Verifier
-        </Text>
-
-        <Text className="text-slate-400 mt-2 text-sm">
-          Automated Business Verification
-        </Text>
-
-        <View className="mt-5 bg-indigo-500/10 border border-indigo-500/30 px-4 py-2 rounded-full">
-          <Text className="text-indigo-400 text-xs font-semibold tracking-wide">
-            Hardware Locked KYB
-          </Text>
-        </View>
-
-      </View>
-
-
-      {/* Card */}
-      <View className="bg-slate-900/70 border border-slate-800 rounded-2xl p-6">
-
-        {/* GST */}
-        <View className="mb-5">
-          <Text className="text-slate-300 mb-2 text-sm font-medium">
-            Business ID (GST / CIN)
-          </Text>
-
-          <TextInput
-            className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-indigo-500"
-            placeholder="GST27AAACR5055K1Z5"
-            placeholderTextColor="#64748b"
-            value={localId}
-            onChangeText={setLocalId}
-            autoCapitalize="characters"
-            autoCorrect={false}
-          />
-        </View>
-
-        {/* Business Name */}
-        <View>
-          <Text className="text-slate-300 mb-2 text-sm font-medium">
-            Business Name
-          </Text>
-
-          <TextInput
-            className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-indigo-500"
-            placeholder="Global Tech Solutions Pvt Ltd"
-            placeholderTextColor="#64748b"
-            value={localName}
-            onChangeText={setLocalName}
-            autoCorrect={false}
-          />
-        </View>
-
-      </View>
-
-
-      {/* Button */}
-      <TouchableOpacity
-        className={`mt-8 py-4 rounded-xl items-center shadow-lg ${
-          canProceed ? "bg-indigo-600" : "bg-slate-700"
-        }`}
-        onPress={() => onStart(localId.trim(), localName.trim())}
-        disabled={!canProceed}
+    <SafeAreaView className="flex-1 bg-slate-950">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1 px-6 justify-center"
       >
-        <Text className="text-white font-semibold text-base tracking-wide">
-          Start Secure Verification
-        </Text>
-      </TouchableOpacity>
+        {/* Header */}
+        <View className="items-center mb-12">
+          <View className="w-20 h-20 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 items-center justify-center mb-5">
+            <Text className="text-4xl">🔍</Text>
+          </View>
+          <Text className="text-white text-3xl font-bold tracking-wide">Ghost Verifier</Text>
+          <Text className="text-slate-400 mt-2 text-sm">Automated Business Verification</Text>
+        </View>
 
+        {/* Card */}
+        <View className="bg-slate-900/70 border border-slate-800 rounded-2xl p-6">
+          <View className="mb-5">
+            <Text className="text-slate-300 mb-2 text-sm font-medium">Business ID (GST / CIN)</Text>
+            <TextInput
+              className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-indigo-500"
+              placeholder="GST27AAACR5055K1Z5"
+              placeholderTextColor="#64748b"
+              value={localId}
+              onChangeText={setLocalId}
+              autoCapitalize="characters"
+              autoCorrect={false}
+            />
+          </View>
 
-      {/* Hint */}
-      <View className="mt-6 items-center">
-        <Text className="text-slate-500 text-xs text-center leading-5">
-          Camera • GPS • Motion sensors will activate next
-        </Text>
-      </View>
+          <View>
+            <Text className="text-slate-300 mb-2 text-sm font-medium">Business Name</Text>
+            <TextInput
+              className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-indigo-500"
+              placeholder="Global Tech Solutions Pvt Ltd"
+              placeholderTextColor="#64748b"
+              value={localName}
+              onChangeText={setLocalName}
+              autoCorrect={false}
+            />
+          </View>
+        </View>
 
-    </KeyboardAvoidingView>
-  </SafeAreaView>
-);
+        {/* Error Message */}
+        {error && (
+          <Text className="text-red-500 mt-4 text-center font-medium">
+            Verification failed. Business not found.
+          </Text>
+        )}
+
+        {/* Button */}
+        <TouchableOpacity
+          className={`mt-8 py-4 rounded-xl items-center shadow-lg ${
+            isLoading ? "bg-slate-700" : "bg-indigo-600"
+          }`}
+          onPress={handleVerifyAndStart}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <View style={{ alignItems: 'center' }}>
+              <ActivityIndicator color="#fff" />
+              <Text style={{ color: '#94A3B8', fontSize: 12, marginTop: 6 }}>{loadingMsg}</Text>
+            </View>
+          ) : (
+            <Text className="text-white font-semibold text-base tracking-wide">
+              Verify & Start Capture
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        <View className="mt-6 items-center">
+          <Text className="text-slate-500 text-xs text-center leading-5">
+            Camera • GPS • Motion sensors will activate next
+          </Text>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -299,17 +371,25 @@ function CaptureView({ businessId, businessName, onComplete }: { businessId: str
     }
   };
 
+  // Helper: upload a local file URI to a pre-signed S3 URL using XHR.
+  // fetch(localUri).blob() silently fails on React Native for file:// URIs.
+  const uploadFileToS3 = (localUri: string, presignedUrl: string, contentType: string): Promise<void> =>
+    new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('PUT', presignedUrl);
+      xhr.setRequestHeader('Content-Type', contentType);
+      xhr.onload  = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`S3 HTTP ${xhr.status}`)));
+      xhr.onerror = () => reject(new Error('S3 upload network error'));
+      xhr.send({ uri: localUri, type: contentType, name: 'upload' } as any);
+    });
+
   const uploadVideoInBackground = async (videoUri: string) => {
     try {
       const vidRes = await axios.get(`${API_URL}/api/upload/presigned-url`, {
         params: { type: 'video', sessionId: localSessionId }
       });
-      const vidBlob = await fetch(videoUri).then(r => r.blob());
-      await fetch(vidRes.data.uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'video/mp4' },
-        body: vidBlob
-      });
+      // FIX: XHR instead of fetch().blob()
+      await uploadFileToS3(videoUri, vidRes.data.uploadUrl, 'video/mp4');
     } catch (err: any) {
       console.warn('Video upload failed:', err?.message || err);
     }
@@ -340,12 +420,8 @@ function CaptureView({ businessId, businessName, onComplete }: { businessId: str
       const thumbRes = await axios.get(`${API_URL}/api/upload/presigned-url`, {
         params: { type: 'thumbnail', sessionId: localSessionId }
       });
-      const thumbBlob = await fetch(thumbnail.uri).then(r => r.blob());
-      await fetch(thumbRes.data.uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'image/jpeg' },
-        body: thumbBlob
-      });
+      // FIX: XHR instead of fetch().blob()
+      await uploadFileToS3(thumbnail.uri, thumbRes.data.uploadUrl, 'image/jpeg');
 
       setStatus('AI scanning in progress...');
       uploadVideoInBackground(videoUri);
@@ -477,7 +553,7 @@ function ResultView({
     socket.on('session_complete', (data: any) => {
       if (data.sessionId === sessionId) {
         if (timerRef.current !== null) clearInterval(timerRef.current);
-        if (fallbackTimer) clearTimeout(fallbackTimer); // Stop fallback from overwriting!
+        if (fallbackTimer) clearTimeout(fallbackTimer);
         setScore(data.trustScore);
         setStatus(data.status);
         setLabels(data.labels || []);
@@ -500,7 +576,6 @@ function ResultView({
           setLabels(s.aiResults?.labels || []);
           setText(s.aiResults?.textDetected || 'NONE');
           setGeoScore(s.geoScore);
-          // Defensive fallback checking standard vs nested 'aiResults' paths
           setSignScore(s.signScore ?? s.aiResults?.signScore ?? null);
           setInfra(s.infraScore ?? s.aiResults?.infraScore ?? null);
           setFlagged(s.aiResults?.isFlagged || false);
