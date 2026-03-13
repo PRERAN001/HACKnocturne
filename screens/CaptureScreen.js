@@ -17,7 +17,7 @@ import * as Location    from 'expo-location';
 import { Accelerometer } from 'expo-sensors';
 import * as Haptics     from 'expo-haptics';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { API_URL, generateSessionId } from '../config';
 
@@ -28,6 +28,26 @@ const RECORDING_PHASES = [
   { duration: 8,  icon: '🖥️', prompt: 'Pan across the office interior / workstations' },
   { duration: 6,  icon: '🪪', prompt: 'Hold your ID card towards the camera briefly' },
 ];
+
+// Random challenges displayed during recording
+const CAPTURE_CHALLENGES = [
+  { id: 'move_left',      icon: '⬅️',  text: 'Move camera slowly to the LEFT' },
+  { id: 'move_right',     icon: '➡️',  text: 'Move camera slowly to the RIGHT' },
+  { id: 'move_up',        icon: '⬆️',  text: 'Tilt camera UPWARD' },
+  { id: 'move_down',      icon: '⬇️',  text: 'Tilt camera DOWNWARD' },
+  { id: 'show_entrance',  icon: '🚪',  text: 'Show the shop ENTRANCE clearly' },
+  { id: 'zoom_signboard', icon: '🔍',  text: 'Zoom into the BUSINESS SIGNBOARD' },
+  { id: 'show_interior',  icon: '🏢',  text: 'Pan across the BUSINESS INTERIOR' },
+  { id: 'show_ceiling',   icon: '☁️',  text: 'Point camera toward the CEILING' },
+  { id: 'show_floor',     icon: '📐',  text: 'Point camera toward the FLOOR' },
+];
+const NUM_CAPTURE_CHALLENGES    = 3;
+const CHALLENGE_DISPLAY_DURATION = 5;            // seconds each challenge is shown
+const CHALLENGE_START_TIMES      = [3000, 13000, 23000]; // ms after recording starts
+
+function pickRandomChallenges() {
+  return [...CAPTURE_CHALLENGES].sort(() => Math.random() - 0.5).slice(0, NUM_CAPTURE_CHALLENGES);
+}
 
 // Pre-flight check animation delays (ms)
 const PREFLIGHT_DELAY_CAMERA  = 400;
@@ -59,13 +79,20 @@ export default function CaptureScreen({ route, navigation }) {
   const [phase,     setPhase]       = useState(0);
   const phaseBar    = useRef(new Animated.Value(0)).current;
 
-  const cameraRef   = useRef(null);
-  const accelData   = useRef([]);
-  const gpsStart    = useRef(null);
-  const gpsEnd      = useRef(null);
-  const timerRef    = useRef(null);
-  const phaseRef    = useRef(null);
-  const sessionId   = useRef(generateSessionId()).current;
+  // Random in-recording challenges
+  const [randomChallenges]              = useState(() => pickRandomChallenges());
+  const [activeChallenge,  setActiveChallenge]  = useState(null);
+  const [challengeTimeLeft, setChallengeTimeLeft] = useState(CHALLENGE_DISPLAY_DURATION);
+
+  const cameraRef         = useRef(null);
+  const accelData         = useRef([]);
+  const gpsStart          = useRef(null);
+  const gpsEnd            = useRef(null);
+  const timerRef          = useRef(null);
+  const phaseRef          = useRef(null);
+  const challengeTimerRef = useRef(null);
+  const challengeSchedules = useRef([]);
+  const sessionId         = useRef(generateSessionId()).current;
 
   // ── Request permissions on mount ─────────────────────────────
   useEffect(() => {
@@ -77,6 +104,8 @@ export default function CaptureScreen({ route, navigation }) {
     return () => {
       clearInterval(timerRef.current);
       clearTimeout(phaseRef.current);
+      clearInterval(challengeTimerRef.current);
+      challengeSchedules.current.forEach(clearTimeout);
       Accelerometer.removeAllListeners();
     };
   }, []);
@@ -108,6 +137,30 @@ export default function CaptureScreen({ route, navigation }) {
     }
     setChecks({ ...result });
   };
+
+  // ── Show a single random challenge for CHALLENGE_DISPLAY_DURATION ──
+  const showChallenge = useCallback((challenge) => {
+    clearInterval(challengeTimerRef.current);
+    setActiveChallenge(challenge);
+    let t = CHALLENGE_DISPLAY_DURATION;
+    setChallengeTimeLeft(t);
+    challengeTimerRef.current = setInterval(() => {
+      t -= 1;
+      setChallengeTimeLeft(t);
+      if (t <= 0) {
+        clearInterval(challengeTimerRef.current);
+        setActiveChallenge(null);
+      }
+    }, 1000);
+  }, []);
+
+  // ── Schedule all random challenges at predefined offsets ─────
+  const scheduleRandomChallenges = useCallback((challenges) => {
+    challengeSchedules.current.forEach(clearTimeout);
+    challengeSchedules.current = challenges.map((ch, i) =>
+      setTimeout(() => showChallenge(ch), CHALLENGE_START_TIMES[i])
+    );
+  }, [showChallenge]);
 
   // ── Animate phase progress bar ────────────────────────────────
   const animatePhase = (phaseDuration) => {
@@ -174,6 +227,9 @@ export default function CaptureScreen({ route, navigation }) {
       // Schedule phase guidance
       schedulePhases();
 
+      // Schedule random challenges at offsets
+      scheduleRandomChallenges(randomChallenges);
+
       // Start video recording
       setRecording(true);
       const video = await cameraRef.current.recordAsync({
@@ -196,6 +252,9 @@ export default function CaptureScreen({ route, navigation }) {
   const stopRecording = async () => {
     clearInterval(timerRef.current);
     clearTimeout(phaseRef.current);
+    challengeSchedules.current.forEach(clearTimeout);
+    clearInterval(challengeTimerRef.current);
+    setActiveChallenge(null);
     Accelerometer.removeAllListeners();
 
     // Capture GPS at end
@@ -393,8 +452,9 @@ export default function CaptureScreen({ route, navigation }) {
   }
 
   // ── Camera View ───────────────────────────────────────────────
-  const currentPhase = RECORDING_PHASES[phase] || RECORDING_PHASES[0];
-  const phaseWidth   = phaseBar.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] });
+  const currentPhase      = RECORDING_PHASES[phase] || RECORDING_PHASES[0];
+  const phaseWidth        = phaseBar.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] });
+  const challengeProgress = `${Math.round((challengeTimeLeft / CHALLENGE_DISPLAY_DURATION) * 100)}%`;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
@@ -404,27 +464,52 @@ export default function CaptureScreen({ route, navigation }) {
         facing="back"
         mode="video"
       >
-        {/* Top bar */}
+        {/* ── Top bar: business info + REC badge + countdown ── */}
         <View style={s.topBar}>
-          <Text style={s.bizName}>{businessName}</Text>
-          <Text style={s.bizId}>{businessId}</Text>
+          <View>
+            <Text style={s.bizName}>{businessName}</Text>
+            <Text style={s.bizId}>{businessId}</Text>
+          </View>
+          {recording && (
+            <View style={s.recBadge}>
+              <View style={s.recDot} />
+              <Text style={s.recBadgeText}>REC  {countdown}s</Text>
+            </View>
+          )}
         </View>
 
-        {/* Recording indicator + GPS lock */}
+        {/* ── GPS / sensor status (during recording) ── */}
         {recording && (
-          <View style={s.recRow}>
-            <View style={s.recDot} />
-            <Text style={s.recText}>RECORDING</Text>
-            {gpsStart.current && (
-              <Text style={s.gpsLock}>
-                {'  '}📍 GPS Locked
-              </Text>
-            )}
+          <View style={s.sensorRow}>
+            <Text style={s.sensorText}>
+              📍 {gpsStart.current ? 'GPS ✓' : 'GPS …'}  ·  📱 {accelData.current.length} pts
+            </Text>
           </View>
         )}
 
-        {/* Phase guidance (during recording) */}
-        {recording && (
+        {/* ── Spacer — camera shows through ── */}
+        <View style={{ flex: 1 }} />
+
+        {/* ── Random challenge card (appears at scheduled offsets) ── */}
+        {recording && activeChallenge && (
+          <View style={s.challengeCard}>
+            <View style={s.challengeHeader}>
+              <View style={s.challengeLiveDot} />
+              <Text style={s.challengeHeaderText}>CHALLENGE</Text>
+            </View>
+            <Text style={s.challengeIcon}>{activeChallenge.icon}</Text>
+            <Text style={s.challengeText}>{activeChallenge.text}</Text>
+            <View style={s.challengeBarTrack}>
+              <View style={[s.challengeBarFill, { width: challengeProgress }]} />
+            </View>
+            <Text style={[s.challengeTimeText, challengeTimeLeft <= 2 && s.challengeTimeUrgent]}>
+              {challengeTimeLeft}s
+            </Text>
+          </View>
+        )}
+
+        {/* ── Phase guidance (shown when no challenge is active) ── */}
+        {recording && !activeChallenge && (
           <View style={s.phaseBox}>
             <Text style={s.phaseIcon}>{currentPhase.icon}</Text>
             <Text style={s.phasePrompt}>{currentPhase.prompt}</Text>
@@ -437,15 +522,7 @@ export default function CaptureScreen({ route, navigation }) {
           </View>
         )}
 
-        {/* Countdown */}
-        {recording && (
-          <View style={s.countdownBox}>
-            <Text style={s.countdown}>{countdown}</Text>
-            <Text style={s.countdownSub}>seconds remaining</Text>
-          </View>
-        )}
-
-        {/* Instructions (idle) */}
+        {/* ── Idle instructions ── */}
         {!recording && (
           <View style={s.instructions}>
             <View style={s.instrCard}>
@@ -453,21 +530,12 @@ export default function CaptureScreen({ route, navigation }) {
               <Text style={s.instrItem}>📍 Point camera at business entrance</Text>
               <Text style={s.instrItem}>🪧 Ensure signboard is clearly visible</Text>
               <Text style={s.instrItem}>🚶 Walk inside premises during recording</Text>
-              <Text style={s.instrItem}>⏱️  30-second guided recording</Text>
+              <Text style={s.instrItem}>⚡ {NUM_CAPTURE_CHALLENGES} random challenges + 30s guided recording</Text>
             </View>
           </View>
         )}
 
-        {/* Accelerometer indicator */}
-        {recording && accelData.current.length > 0 && (
-          <View style={s.sensorRow}>
-            <Text style={s.sensorText}>
-              📱 Motion: {accelData.current.length} pts  ·  🌐 {gpsStart.current ? 'GPS ✓' : 'GPS …'}
-            </Text>
-          </View>
-        )}
-
-        {/* Bottom controls */}
+        {/* ── Bottom controls ── */}
         <View style={s.bottomBar}>
           {!recording ? (
             <TouchableOpacity style={s.preflightBtn} onPress={runPreflight} activeOpacity={0.8}>
@@ -528,34 +596,43 @@ const s = StyleSheet.create({
   retryBtnText  : { color: '#60A5FA', fontSize: 16, fontWeight: '600' },
 
   // Camera overlays
-  topBar        : { backgroundColor: 'rgba(0,0,0,0.7)', padding: 16, paddingTop: 48 },
+  topBar        : { backgroundColor: 'rgba(0,0,0,0.75)', padding: 16, paddingTop: 48, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   bizName       : { color: '#fff', fontSize: 18, fontWeight: 'bold' },
   bizId         : { color: '#94A3B8', fontSize: 13, marginTop: 2 },
 
-  recRow        : { flexDirection: 'row', alignItems: 'center', padding: 12, paddingLeft: 16 },
-  recDot        : { width: 12, height: 12, borderRadius: 6, backgroundColor: '#EF4444', marginRight: 8 },
-  recText       : { color: '#EF4444', fontSize: 14, fontWeight: 'bold', letterSpacing: 2 },
-  gpsLock       : { color: '#4ADE80', fontSize: 13, fontWeight: '600' },
+  // REC badge (top-right, contains timer)
+  recBadge      : { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(220,38,38,0.9)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
+  recDot        : { width: 10, height: 10, borderRadius: 5, backgroundColor: '#fff' },
+  recBadgeText  : { color: '#fff', fontSize: 13, fontWeight: 'bold', letterSpacing: 0.8 },
+
+  // Sensor / GPS row (just below topBar)
+  sensorRow     : { backgroundColor: 'rgba(0,0,0,0.55)', paddingHorizontal: 14, paddingVertical: 5, alignSelf: 'center', borderRadius: 20, marginTop: 6 },
+  sensorText    : { color: '#94A3B8', fontSize: 11 },
+
+  // Random challenge card
+  challengeCard       : { backgroundColor: 'rgba(0,0,0,0.88)', borderRadius: 20, marginHorizontal: 16, marginBottom: 10, padding: 22, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
+  challengeHeader     : { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 14, backgroundColor: 'rgba(220,38,38,0.85)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  challengeLiveDot    : { width: 8, height: 8, borderRadius: 4, backgroundColor: '#fff' },
+  challengeHeaderText : { color: '#fff', fontSize: 11, fontWeight: 'bold', letterSpacing: 1.5 },
+  challengeIcon       : { fontSize: 54, marginBottom: 10 },
+  challengeText       : { color: '#fff', fontSize: 19, fontWeight: 'bold', textAlign: 'center', marginBottom: 18, lineHeight: 26 },
+  challengeBarTrack   : { width: '100%', height: 6, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 3, marginBottom: 10, overflow: 'hidden' },
+  challengeBarFill    : { height: '100%', borderRadius: 3, backgroundColor: '#3B82F6' },
+  challengeTimeText   : { fontSize: 22, fontWeight: 'bold', color: '#F8FAFC' },
+  challengeTimeUrgent : { color: '#EF4444' },
 
   // Phase guidance
-  phaseBox      : { backgroundColor: 'rgba(0,0,0,0.72)', marginHorizontal: 16, borderRadius: 14, padding: 16, alignItems: 'center' },
+  phaseBox      : { backgroundColor: 'rgba(0,0,0,0.72)', marginHorizontal: 16, marginBottom: 10, borderRadius: 14, padding: 16, alignItems: 'center' },
   phaseIcon     : { fontSize: 30, marginBottom: 6 },
   phasePrompt   : { color: '#fff', fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 10 },
   phaseBarTrack : { height: 4, backgroundColor: '#334155', borderRadius: 2, width: '100%', marginBottom: 6 },
   phaseBarFill  : { height: 4, backgroundColor: '#2563EB', borderRadius: 2 },
   phaseCount    : { color: '#94A3B8', fontSize: 12 },
 
-  countdownBox  : { position: 'absolute', top: '38%', alignSelf: 'center', alignItems: 'center' },
-  countdown     : { fontSize: 80, fontWeight: 'bold', color: '#FCD34D', textShadowColor: '#000', textShadowRadius: 10 },
-  countdownSub  : { color: '#FCD34D', fontSize: 16, marginTop: -8 },
-
-  instructions  : { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  instructions  : { alignItems: 'center', padding: 20, paddingBottom: 10 },
   instrCard     : { backgroundColor: 'rgba(0,0,0,0.65)', borderRadius: 16, padding: 20, width: '100%', gap: 10 },
   instrHead     : { color: '#60A5FA', fontSize: 16, fontWeight: 'bold', marginBottom: 6, textAlign: 'center' },
   instrItem     : { color: '#fff', fontSize: 14 },
-
-  sensorRow     : { backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 14, paddingVertical: 6, alignSelf: 'center', borderRadius: 20, marginVertical: 6 },
-  sensorText    : { color: '#94A3B8', fontSize: 11 },
 
   bottomBar     : { backgroundColor: 'rgba(0,0,0,0.7)', padding: 24, alignItems: 'center' },
   preflightBtn  : { backgroundColor: '#2563EB', paddingHorizontal: 40, paddingVertical: 16, borderRadius: 40, alignItems: 'center' },
