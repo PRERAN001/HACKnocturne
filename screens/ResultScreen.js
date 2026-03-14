@@ -31,7 +31,7 @@ const RISK_FACTORS = [
 // ── Recommendations by status ─────────────────────────────────
 const RECOMMENDATIONS = {
   PASSED: [
-    'Business verified -- onboarding can proceed',
+    'Business verified - onboarding can proceed',
     'Keep verification report for compliance records',
     'Re-verify annually or after address change',
   ],

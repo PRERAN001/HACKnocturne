@@ -259,10 +259,10 @@ const s = StyleSheet.create({
 
   // Header
   header         : { alignItems: 'center', marginBottom: 28, paddingTop: 12 },
-  logoWrap       : { width: 80, height: 80, borderRadius: 40, backgroundColor: '#1E3A5F', justifyContent: 'center', alignItems: 'center', marginBottom: 12, borderWidth: 2, borderColor: '#2563EB' },
-  logo           : { fontSize: 24, fontWeight: 'bold', color: '#60A5FA', letterSpacing: 2 },
-  title          : { fontSize: 30, fontWeight: 'bold', color: '#F8FAFC', marginBottom: 4 },
-  subtitle       : { fontSize: 14, color: '#94A3B8', marginBottom: 14 },
+  logoWrap       : { width: 72, height: 72, borderRadius: 16, backgroundColor: '#1E293B', justifyContent: 'center', alignItems: 'center', marginBottom: 14, borderWidth: 1.5, borderColor: '#2563EB' },
+  logo           : { fontSize: 22, fontWeight: '700', color: '#60A5FA', letterSpacing: 3 },
+  title          : { fontSize: 28, fontWeight: '700', color: '#F8FAFC', marginBottom: 4, letterSpacing: 0.5 },
+  subtitle       : { fontSize: 13, color: '#94A3B8', marginBottom: 14, letterSpacing: 0.3 },
   badgeRow       : { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' },
   badge          : { backgroundColor: '#1E293B', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, borderWidth: 1, borderColor: '#334155' },
   badgeText      : { color: '#60A5FA', fontSize: 11, fontWeight: '600' },

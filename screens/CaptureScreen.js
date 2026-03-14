@@ -25,7 +25,7 @@ import { API_URL, generateSessionId } from '../config';
 const RECORDING_PHASES = [
   { duration: 8,  prompt: 'Show the building entrance and signboard clearly' },
   { duration: 8,  prompt: 'Slowly walk inside the premises' },
-  { duration: 8,  prompt: 'Pan across the office interior / workstations' },
+  { duration: 8,  prompt: 'Pan across the office interior and workstations' },
   { duration: 6,  prompt: 'Hold your ID card towards the camera briefly' },
 ];
 
@@ -360,7 +360,7 @@ export default function CaptureScreen({ route, navigation }) {
                     val === true  ? s.checkPass :
                     val === false ? s.checkFail : s.checkPending
                   ]}>
-                    {val === true ? 'Ready' : val === false ? 'Failed' : '...'}
+                    {val === true ? 'Ready' : val === false ? 'Failed' : 'Checking'}
                   </Text>
                 </View>
               );

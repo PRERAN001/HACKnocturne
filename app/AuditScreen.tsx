@@ -352,7 +352,7 @@ function AuditCaptureScreen({ request, onComplete }: { request: AuditRequest; on
     <SafeAreaView style={sCapture.safe}>
       <CameraView style={sCapture.flex1} ref={cameraRef} facing="back" mode="video">
         <View style={sCapture.auditBanner}>
-          <Text style={sCapture.auditBannerText}>AUDIT CAPTURE -- {request.sessionId}</Text>
+          <Text style={sCapture.auditBannerText}>AUDIT CAPTURE - {request.sessionId}</Text>
         </View>
         <View style={sCapture.topBar}>
           <Text style={sCapture.bizName}>{request.businessName}</Text>
@@ -376,7 +376,7 @@ function AuditCaptureScreen({ request, onComplete }: { request: AuditRequest; on
             <Text style={sCapture.instrText}>Show the business signboard clearly</Text>
             <Text style={sCapture.instrText}>Gallery access disabled</Text>
             {!locPermission && (
-              <Text style={sCapture.instrTextWarn}>Location permission missing -- GPS will not be captured</Text>
+              <Text style={sCapture.instrTextWarn}>Location permission missing - GPS will not be captured</Text>
             )}
           </View>
         )}
