@@ -56,12 +56,12 @@ Main application entry point. Registers all screens in a React Navigation stack 
 
 #### `screens/HomeScreen.js`
 
-Step 1 of onboarding. Collects initial business information:
+Entry point of the verification flow. Collects initial business information:
 - Business type dropdown (Pvt Ltd, LLP, OPC, DPIIT Startup, etc.)
 - Registration ID type selector with dynamic placeholder (GST / CIN / UDYAM / PAN)
 - Owner name input
 - 10-digit phone number input with `+91` prefix and strict validation
-- 4-step onboarding progress indicator
+- Progress indicator showing current position in the verification pipeline
 - Navigation link to HistoryScreen for past verifications
 
 #### `screens/DocumentScreen.js`
@@ -73,7 +73,7 @@ Step 2 of onboarding. Camera-based document capture with a corner-marker frame o
 - Shop/Trade License
 - Business Registration Certificate
 
-Each document supports per-document retake flow. Progress bar reflects the full 8-step verification pipeline.
+Each document supports per-document retake flow. Progress bar reflects the current position in the verification pipeline.
 
 #### `screens/SignboardCaptureScreen.js`
 
@@ -99,7 +99,7 @@ Captures interior evidence with 4 slots (minimum 2 required):
 3. Products / inventory
 4. Equipment / machinery
 
-Camera watermarks "AI fraud detection active" to flag residential object detection context for the backend AI model.
+Camera watermarks "AI fraud detection active" to indicate that AI is actively scanning for residential objects that may suggest a non-commercial location.
 
 #### `screens/LivenessChallengeScreen.js`
 
@@ -145,7 +145,7 @@ Final submit button routes to the video capture screen.
 #### `screens/CaptureScreen.js`
 
 Guided video recording with AI-assisted verification signals:
-- **Pre-flight checks**: Camera access, GPS location, and network reachability verification with named delay constants
+- **Pre-flight checks**: Camera access, GPS location, and network reachability verification before recording begins
 - **4-phase guided recording** with animated progress bar per phase:
   1. Building entrance and signboard (8 seconds)
   2. Walk inside the premises (8 seconds)
