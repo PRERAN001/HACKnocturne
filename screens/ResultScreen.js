@@ -31,21 +31,21 @@ const RISK_FACTORS = [
 // ── Recommendations by status ─────────────────────────────────
 const RECOMMENDATIONS = {
   PASSED: [
-    '✅ Business verified — onboarding can proceed',
-    '📋 Keep verification report for compliance records',
-    '🔄 Re-verify annually or after address change',
+    'Business verified -- onboarding can proceed',
+    'Keep verification report for compliance records',
+    'Re-verify annually or after address change',
   ],
   REVIEW: [
-    '⚠️ Manual review required before onboarding',
-    '📞 Call business owner to confirm details',
-    '🏢 Schedule an in-person field audit',
-    '📄 Request additional address proof documents',
+    'Manual review required before onboarding',
+    'Call business owner to confirm details',
+    'Schedule an in-person field audit',
+    'Request additional address proof documents',
   ],
   FAILED: [
-    '🚫 Do not proceed with onboarding',
-    '🚩 Flag account for fraud investigation',
-    '📧 Notify compliance & risk team immediately',
-    '🔒 Freeze any pending transactions for this entity',
+    'Do not proceed with onboarding',
+    'Flag account for fraud investigation',
+    'Notify compliance and risk team immediately',
+    'Freeze any pending transactions for this entity',
   ],
 };
 
@@ -187,10 +187,10 @@ export default function ResultScreen({ route, navigation }) {
         `STATUS      : ${status}`,
         '',
         '── Score Breakdown ─────────────',
-        `GPS Match    (40%) : ${geoScore === 1 ? 'PASS ✓' : 'FAIL ✗'}`,
+        `GPS Match    (40%) : ${geoScore === 1 ? 'PASS' : 'FAIL'}`,
         `Signage      (30%) : ${signScore !== null ? Math.round(signScore * 100) + '%' : '-'}`,
         `Infrastructure(30%): ${infraScore !== null ? Math.round(infraScore * 100) + '%' : '-'}`,
-        deepfake !== null ? `Deepfake Risk      : ${deepfake < 0.3 ? 'LOW ✓' : deepfake < 0.6 ? 'MEDIUM ⚠️' : 'HIGH 🚩'}` : '',
+        deepfake !== null ? `Deepfake Risk      : ${deepfake < 0.3 ? 'LOW' : deepfake < 0.6 ? 'MEDIUM' : 'HIGH'}` : '',
         '',
         '── Sign Text ───────────────────',
         text === 'NONE' ? 'No business sign detected' : `"${text}"`,
@@ -224,7 +224,7 @@ export default function ResultScreen({ route, navigation }) {
     : status === 'REVIEW'  ? '#78350F'
     : '#7F1D1D';
 
-  const statusEmoji = status === 'PASSED' ? '✅' : status === 'REVIEW' ? '⚠️' : '🚩';
+  const statusLabel = status === 'PASSED' ? 'PASSED' : status === 'REVIEW' ? 'REVIEW' : 'FAILED';
 
   // ── Flag labels ───────────────────────────────────────────────
   const FLAG_LABELS = ['Bed','Pillow','Bedroom','Couch','Sofa','Kitchen','Bathroom'];
@@ -283,7 +283,7 @@ export default function ResultScreen({ route, navigation }) {
 
         {/* Status badge */}
         <View style={[s.statusBadge, { backgroundColor: statusBg }]}>
-          <Text style={s.statusText}>{statusEmoji}{'  '}{status}</Text>
+          <Text style={s.statusText}>{statusLabel}</Text>
         </View>
 
         {/* Score breakdown */}
@@ -312,9 +312,9 @@ export default function ResultScreen({ route, navigation }) {
                   deepfake < 0.6 ? '#78350F' : '#7F1D1D'
               }]}>
                 <Text style={s.deepfakeBadgeText}>
-                  {deepfake < 0.3 ? '✓ Authentic Video' :
-                   deepfake < 0.6 ? '⚠️ Review Needed' :
-                   '🚩 Possible Deepfake'}
+                  {deepfake < 0.3 ? 'Authentic Video' :
+                   deepfake < 0.6 ? 'Review Needed' :
+                   'Possible Deepfake'}
                 </Text>
               </View>
               <Text style={s.deepfakeScore}>
@@ -351,7 +351,7 @@ export default function ResultScreen({ route, navigation }) {
         <View style={s.section}>
           <Text style={s.sectionTitle}>Sign Text Detected</Text>
           <Text style={s.signText}>
-            {text === 'NONE' ? '⚠️ No business sign detected' : `"${text}"`}
+            {text === 'NONE' ? 'No business sign detected' : `"${text}"`}
           </Text>
         </View>
 
@@ -362,7 +362,7 @@ export default function ResultScreen({ route, navigation }) {
             {labels.map(l => (
               <View key={l} style={[s.chip, isNegative(l) ? s.chipBad : s.chipGood]}>
                 <Text style={[s.chipText, isNegative(l) ? s.chipTextBad : s.chipTextGood]}>
-                  {isNegative(l) ? '⚠️ ' : '✓ '}{l}
+                  {l}
                 </Text>
               </View>
             ))}
@@ -375,7 +375,7 @@ export default function ResultScreen({ route, navigation }) {
         {/* Flagged warning */}
         {isFlagged && (
           <View style={s.flagBox}>
-            <Text style={s.flagTitle}>🚩 Residential Indicators Found</Text>
+            <Text style={s.flagTitle}>Residential Indicators Found</Text>
             <Text style={s.flagText}>
               AI detected residential objects (Bed, Sofa, Kitchen etc).
               This business may be operating from a residential address.
@@ -416,7 +416,7 @@ export default function ResultScreen({ route, navigation }) {
         >
           {sharing
             ? <ActivityIndicator color="#fff" />
-            : <Text style={s.shareBtnText}>📤  Share Verification Report</Text>}
+            : <Text style={s.shareBtnText}>Share Verification Report</Text>}
         </TouchableOpacity>
 
         <TouchableOpacity

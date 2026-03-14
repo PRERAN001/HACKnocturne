@@ -213,7 +213,7 @@ export function StrictCaptureCamera({ sessionId, onComplete, onCancel }) {
       {!recording && (
         <View style={styles.instructionBanner}>
           <Text style={styles.instructionText}>
-            🏢  Slowly pan around your entire office space.
+            Slowly pan around your entire office space.
             Capture walls, windows, doors, and furniture clearly.
           </Text>
         </View>

@@ -31,7 +31,7 @@ export default function App() {
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: '🔍 Ghost Verifier', headerShown: false }}
+          options={{ title: 'Ghost Verifier', headerShown: false }}
         />
         <Stack.Screen
           name="Document"

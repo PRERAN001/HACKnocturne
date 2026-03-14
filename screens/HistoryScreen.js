@@ -20,10 +20,10 @@ const statusColor = (st) =>
   st === 'REVIEW' ? '#D97706' :
   st === 'FAILED' ? '#DC2626' : '#94A3B8';
 
-const statusEmoji = (st) =>
-  st === 'PASSED' ? '✅' :
-  st === 'REVIEW' ? '⚠️' :
-  st === 'FAILED' ? '🚩' : '⏳';
+const statusIndicator = (st) =>
+  st === 'PASSED' ? 'P' :
+  st === 'REVIEW' ? 'R' :
+  st === 'FAILED' ? 'F' : '-';
 
 // ── Exposed helper — call from ResultScreen to save on completion ──
 export const saveVerificationToHistory = async (entry) => {
@@ -48,7 +48,9 @@ function HistoryCard({ item }) {
   return (
     <View style={s.card}>
       <View style={s.cardLeft}>
-        <Text style={s.cardEmoji}>{statusEmoji(item.status)}</Text>
+        <View style={[s.statusDot, { backgroundColor: col }]}>
+          <Text style={s.statusDotText}>{statusIndicator(item.status)}</Text>
+        </View>
       </View>
       <View style={s.cardBody}>
         <Text style={s.cardName} numberOfLines={1}>{item.businessName}</Text>
@@ -127,7 +129,6 @@ export default function HistoryScreen({ navigation }) {
 
       {history.length === 0 ? (
         <View style={s.center}>
-          <Text style={s.emptyIcon}>🗂️</Text>
           <Text style={s.emptyTitle}>No History Yet</Text>
           <Text style={s.emptyText}>
             Completed verifications will appear here.
@@ -170,7 +171,8 @@ const s = StyleSheet.create({
 
   card       : { backgroundColor: '#1E293B', borderRadius: 14, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: '#334155' },
   cardLeft   : { width: 40, alignItems: 'center' },
-  cardEmoji  : { fontSize: 24 },
+  statusDot  : { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  statusDotText: { color: '#fff', fontSize: 12, fontWeight: '700' },
   cardBody   : { flex: 1 },
   cardName   : { color: '#F8FAFC', fontSize: 15, fontWeight: '600', marginBottom: 2 },
   cardId     : { color: '#475569', fontSize: 12, marginBottom: 4 },
@@ -179,7 +181,6 @@ const s = StyleSheet.create({
   cardScore  : { fontSize: 26, fontWeight: 'bold' },
   cardStatus : { fontSize: 11, fontWeight: '700', marginTop: 2 },
 
-  emptyIcon  : { fontSize: 56, marginBottom: 16 },
   emptyTitle : { color: '#F8FAFC', fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
   emptyText  : { color: '#475569', fontSize: 14, textAlign: 'center', marginBottom: 32 },
 

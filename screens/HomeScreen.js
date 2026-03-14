@@ -106,14 +106,14 @@ export default function HomeScreen({ navigation }) {
           {/* Header */}
           <View style={s.header}>
             <View style={s.logoWrap}>
-              <Text style={s.logo}>🔍</Text>
+              <Text style={s.logo}>GV</Text>
             </View>
             <Text style={s.title}>Ghost Verifier</Text>
-            <Text style={s.subtitle}>B2B Fintech · Active KYB Platform</Text>
+            <Text style={s.subtitle}>B2B Fintech  |  Active KYB Platform</Text>
             <View style={s.badgeRow}>
-              <View style={s.badge}><Text style={s.badgeText}>🔒 Hardware-Locked</Text></View>
-              <View style={s.badge}><Text style={s.badgeText}>📡 GPS + AI</Text></View>
-              <View style={s.badge}><Text style={s.badgeText}>🛡️ Anti-Deepfake</Text></View>
+              <View style={s.badge}><Text style={s.badgeText}>Hardware-Locked</Text></View>
+              <View style={s.badge}><Text style={s.badgeText}>GPS + AI</Text></View>
+              <View style={s.badge}><Text style={s.badgeText}>Anti-Deepfake</Text></View>
             </View>
           </View>
 
@@ -191,7 +191,7 @@ export default function HomeScreen({ navigation }) {
             <Text style={s.label}>Mobile Number *</Text>
             <View style={s.phoneRow}>
               <View style={s.countryCode}>
-                <Text style={s.countryCodeText}>🇮🇳 +91</Text>
+                <Text style={s.countryCodeText}>+91</Text>
               </View>
               <TextInput
                 style={[s.input, s.phoneInput]}
@@ -219,7 +219,7 @@ export default function HomeScreen({ navigation }) {
 
           {/* Info box */}
           <View style={s.infoBox}>
-            <Text style={s.infoIcon}>ℹ️</Text>
+            <Text style={s.infoIcon}>i</Text>
             <Text style={s.infoText}>
               You will be asked to upload business documents and record a live walk-in video.
               GPS, Camera, and Motion sensors will activate during verification.
@@ -233,7 +233,7 @@ export default function HomeScreen({ navigation }) {
             disabled={!canProceed}
             activeOpacity={0.8}
           >
-            <Text style={s.btnText}>Continue to Documents  →</Text>
+            <Text style={s.btnText}>Continue to Documents</Text>
           </TouchableOpacity>
 
           {/* History link */}
@@ -241,7 +241,7 @@ export default function HomeScreen({ navigation }) {
             style={s.historyLink}
             onPress={() => navigation.navigate('History')}
           >
-            <Text style={s.historyLinkText}>🗂️  View Verification History</Text>
+            <Text style={s.historyLinkText}>View Verification History</Text>
           </TouchableOpacity>
 
           <Text style={s.hint}>
@@ -260,7 +260,7 @@ const s = StyleSheet.create({
   // Header
   header         : { alignItems: 'center', marginBottom: 28, paddingTop: 12 },
   logoWrap       : { width: 80, height: 80, borderRadius: 40, backgroundColor: '#1E3A5F', justifyContent: 'center', alignItems: 'center', marginBottom: 12, borderWidth: 2, borderColor: '#2563EB' },
-  logo           : { fontSize: 40 },
+  logo           : { fontSize: 24, fontWeight: 'bold', color: '#60A5FA', letterSpacing: 2 },
   title          : { fontSize: 30, fontWeight: 'bold', color: '#F8FAFC', marginBottom: 4 },
   subtitle       : { fontSize: 14, color: '#94A3B8', marginBottom: 14 },
   badgeRow       : { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' },
@@ -310,7 +310,7 @@ const s = StyleSheet.create({
 
   // Info
   infoBox        : { backgroundColor: '#1E293B', borderRadius: 12, padding: 14, marginBottom: 20, flexDirection: 'row', alignItems: 'flex-start', gap: 10, borderLeftWidth: 3, borderLeftColor: '#2563EB' },
-  infoIcon       : { fontSize: 16, marginTop: 1 },
+  infoIcon       : { fontSize: 16, marginTop: 1, color: '#60A5FA', fontWeight: 'bold', width: 20, height: 20, borderRadius: 10, borderWidth: 1, borderColor: '#60A5FA', textAlign: 'center', lineHeight: 18 },
   infoText       : { color: '#94A3B8', fontSize: 13, lineHeight: 20, flex: 1 },
 
   // Button

@@ -188,7 +188,7 @@ function HomeView({
         {/* Header */}
         <View className="items-center mb-12">
           <View className="w-20 h-20 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 items-center justify-center mb-5">
-            <Text className="text-4xl">🔍</Text>
+            <Text className="text-2xl font-bold text-indigo-400 tracking-widest">GV</Text>
           </View>
           <Text className="text-white text-3xl font-bold tracking-wide">Ghost Verifier</Text>
           <Text className="text-slate-400 mt-2 text-sm">Automated Business Verification</Text>
@@ -484,9 +484,9 @@ function CaptureView({ businessId, businessName, onComplete }: { businessId: str
 
         {!recording && (
           <View style={sCap.instructions}>
-            <Text style={sCap.instrText}>📍 Point camera at business entrance</Text>
-            <Text style={sCap.instrText}>🪧 Make sure signboard is visible</Text>
-            <Text style={sCap.instrText}>⏱️ Recording will run for 30 seconds</Text>
+            <Text style={sCap.instrText}>Point camera at business entrance</Text>
+            <Text style={sCap.instrText}>Make sure signboard is visible</Text>
+            <Text style={sCap.instrText}>Recording will run for 30 seconds</Text>
           </View>
         )}
 
@@ -638,8 +638,7 @@ function ResultView({
 
         <View style={[sRes.statusBadge, { backgroundColor: statusBg }]}>
           <Text style={sRes.statusText}>
-            {status === 'PASSED' ? '✅' : status === 'REVIEW' ? '⚠️' : '🚩'}
-            {'  '}{status}
+            {status}
           </Text>
         </View>
 
@@ -659,7 +658,7 @@ function ResultView({
 
         <View style={sRes.section}>
           <Text style={sRes.sectionTitle}>Sign Text Detected</Text>
-          <Text style={sRes.signText}>{text === 'NONE' ? '⚠️ No business sign detected' : `"${text}"`}</Text>
+          <Text style={sRes.signText}>{text === 'NONE' ? 'No business sign detected' : `"${text}"`}</Text>
         </View>
 
         <View style={sRes.section}>
@@ -668,7 +667,7 @@ function ResultView({
             {labels.length > 0 ? labels.map(l => (
               <View key={l} style={[sRes.chip, isNegative(l) ? sRes.chipBad : sRes.chipGood]}>
                 <Text style={[sRes.chipText, isNegative(l) ? sRes.chipTextBad : sRes.chipTextGood]}>
-                  {isNegative(l) ? '⚠️ ' : '✓ '}{l}
+                  {l}
                 </Text>
               </View>
             )) : <Text style={sRes.noLabels}>No objects detected</Text>}
@@ -677,7 +676,7 @@ function ResultView({
 
         {isFlagged && (
           <View style={sRes.flagBox}>
-            <Text style={sRes.flagTitle}>🚩 Residential Indicators Found</Text>
+            <Text style={sRes.flagTitle}>Residential Indicators Found</Text>
             <Text style={sRes.flagText}>
               AI detected residential objects (Bed, Sofa, Kitchen etc).
               This business may be operating from a residential address.

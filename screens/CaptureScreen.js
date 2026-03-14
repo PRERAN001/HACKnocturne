@@ -23,10 +23,10 @@ import { API_URL, generateSessionId } from '../config';
 
 // Recording phases that guide the user through a live walk-in
 const RECORDING_PHASES = [
-  { duration: 8,  icon: '🏢', prompt: 'Show the building entrance & signboard clearly' },
-  { duration: 8,  icon: '🚶', prompt: 'Slowly walk inside the premises' },
-  { duration: 8,  icon: '🖥️', prompt: 'Pan across the office interior / workstations' },
-  { duration: 6,  icon: '🪪', prompt: 'Hold your ID card towards the camera briefly' },
+  { duration: 8,  prompt: 'Show the building entrance and signboard clearly' },
+  { duration: 8,  prompt: 'Slowly walk inside the premises' },
+  { duration: 8,  prompt: 'Pan across the office interior / workstations' },
+  { duration: 6,  prompt: 'Hold your ID card towards the camera briefly' },
 ];
 
 // Pre-flight check animation delays (ms)
@@ -36,9 +36,9 @@ const PREFLIGHT_DELAY_NETWORK  = 600;
 
 // Pre-flight checks
 const CHECKS = [
-  { id: 'camera',   label: 'Camera Access',      icon: '📷' },
-  { id: 'location', label: 'GPS Location',        icon: '📍' },
-  { id: 'network',  label: 'Network Reachable',   icon: '📡' },
+  { id: 'camera',   label: 'Camera Access' },
+  { id: 'location', label: 'GPS Location' },
+  { id: 'network',  label: 'Network Reachable' },
 ];
 
 export default function CaptureScreen({ route, navigation }) {
@@ -300,7 +300,6 @@ export default function CaptureScreen({ route, navigation }) {
   if (!camPermission?.granted) {
     return (
       <View style={s.center}>
-        <Text style={s.permIcon}>📷</Text>
         <Text style={s.permTitle}>Camera Access Required</Text>
         <Text style={s.permText}>
           Camera permission is needed to record the live verification video.
@@ -348,18 +347,20 @@ export default function CaptureScreen({ route, navigation }) {
           <Text style={s.preflightSub}>Verifying device capabilities before recording</Text>
 
           <View style={s.checksList}>
-            {CHECKS.map(c => {
+            {CHECKS.map((c, idx) => {
               const val = checks[c.id];
               return (
                 <View key={c.id} style={s.checkRow}>
-                  <Text style={s.checkIcon}>{c.icon}</Text>
+                  <View style={s.checkIconWrap}>
+                    <Text style={s.checkIconText}>{idx + 1}</Text>
+                  </View>
                   <Text style={s.checkLabel}>{c.label}</Text>
                   <Text style={[
                     s.checkStatus,
                     val === true  ? s.checkPass :
                     val === false ? s.checkFail : s.checkPending
                   ]}>
-                    {val === true ? '✓ Ready' : val === false ? '✗ Failed' : '…'}
+                    {val === true ? 'Ready' : val === false ? 'Failed' : '...'}
                   </Text>
                 </View>
               );
@@ -369,16 +370,16 @@ export default function CaptureScreen({ route, navigation }) {
           {allPassed && (
             <>
               <View style={s.guideBox}>
-                <Text style={s.guideTitle}>📋 Recording Guide</Text>
+                <Text style={s.guideTitle}>Recording Guide</Text>
                 {RECORDING_PHASES.map((p, i) => (
                   <View key={i} style={s.guideRow}>
                     <View style={s.guideNum}><Text style={s.guideNumText}>{i + 1}</Text></View>
-                    <Text style={s.guideStep}>{p.icon} {p.prompt} ({p.duration}s)</Text>
+                    <Text style={s.guideStep}>{p.prompt} ({p.duration}s)</Text>
                   </View>
                 ))}
               </View>
               <TouchableOpacity style={s.startBtn} onPress={() => { setPreflight(false); startRecording(); }}>
-                <Text style={s.startBtnText}>Begin Recording  ●</Text>
+                <Text style={s.startBtnText}>Begin Recording</Text>
               </TouchableOpacity>
             </>
           )}
@@ -417,7 +418,7 @@ export default function CaptureScreen({ route, navigation }) {
             <Text style={s.recText}>RECORDING</Text>
             {gpsStart.current && (
               <Text style={s.gpsLock}>
-                {'  '}📍 GPS Locked
+                {'  '}GPS Locked
               </Text>
             )}
           </View>
@@ -426,7 +427,6 @@ export default function CaptureScreen({ route, navigation }) {
         {/* Phase guidance (during recording) */}
         {recording && (
           <View style={s.phaseBox}>
-            <Text style={s.phaseIcon}>{currentPhase.icon}</Text>
             <Text style={s.phasePrompt}>{currentPhase.prompt}</Text>
             <View style={s.phaseBarTrack}>
               <Animated.View style={[s.phaseBarFill, { width: phaseWidth }]} />
@@ -450,10 +450,10 @@ export default function CaptureScreen({ route, navigation }) {
           <View style={s.instructions}>
             <View style={s.instrCard}>
               <Text style={s.instrHead}>Live Walk-in Verification</Text>
-              <Text style={s.instrItem}>📍 Point camera at business entrance</Text>
-              <Text style={s.instrItem}>🪧 Ensure signboard is clearly visible</Text>
-              <Text style={s.instrItem}>🚶 Walk inside premises during recording</Text>
-              <Text style={s.instrItem}>⏱️  30-second guided recording</Text>
+              <Text style={s.instrItem}>Point camera at business entrance</Text>
+              <Text style={s.instrItem}>Ensure signboard is clearly visible</Text>
+              <Text style={s.instrItem}>Walk inside premises during recording</Text>
+              <Text style={s.instrItem}>30-second guided recording</Text>
             </View>
           </View>
         )}
@@ -462,7 +462,7 @@ export default function CaptureScreen({ route, navigation }) {
         {recording && accelData.current.length > 0 && (
           <View style={s.sensorRow}>
             <Text style={s.sensorText}>
-              📱 Motion: {accelData.current.length} pts  ·  🌐 {gpsStart.current ? 'GPS ✓' : 'GPS …'}
+              Motion: {accelData.current.length} pts  |  {gpsStart.current ? 'GPS Active' : 'GPS Pending'}
             </Text>
           </View>
         )}
@@ -471,7 +471,7 @@ export default function CaptureScreen({ route, navigation }) {
         <View style={s.bottomBar}>
           {!recording ? (
             <TouchableOpacity style={s.preflightBtn} onPress={runPreflight} activeOpacity={0.8}>
-              <Text style={s.preflightBtnText}>🚀  Start Verification</Text>
+              <Text style={s.preflightBtnText}>Start Verification</Text>
             </TouchableOpacity>
           ) : (
             <>
@@ -490,7 +490,6 @@ export default function CaptureScreen({ route, navigation }) {
 const s = StyleSheet.create({
   safe         : { flex: 1, backgroundColor: '#0A0F1E' },
   center       : { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0A0F1E', padding: 24 },
-  permIcon     : { fontSize: 56, marginBottom: 16 },
   permTitle    : { color: '#F8FAFC', fontSize: 22, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' },
   permText     : { color: '#94A3B8', fontSize: 15, textAlign: 'center', marginBottom: 24, lineHeight: 22 },
   uploadText   : { color: '#F8FAFC', fontSize: 20, fontWeight: 'bold', marginTop: 24, textAlign: 'center' },
@@ -508,7 +507,8 @@ const s = StyleSheet.create({
   preflightSub  : { color: '#94A3B8', fontSize: 14, marginBottom: 32 },
   checksList    : { gap: 0 },
   checkRow      : { flexDirection: 'row', alignItems: 'center', paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#1E293B', gap: 14 },
-  checkIcon     : { fontSize: 22, width: 28, textAlign: 'center' },
+  checkIconWrap : { width: 28, height: 28, borderRadius: 14, backgroundColor: '#1E3A5F', justifyContent: 'center', alignItems: 'center' },
+  checkIconText : { color: '#60A5FA', fontSize: 12, fontWeight: '700' },
   checkLabel    : { flex: 1, color: '#F8FAFC', fontSize: 16 },
   checkStatus   : { fontSize: 14, fontWeight: '600' },
   checkPass     : { color: '#4ADE80' },
@@ -539,7 +539,6 @@ const s = StyleSheet.create({
 
   // Phase guidance
   phaseBox      : { backgroundColor: 'rgba(0,0,0,0.72)', marginHorizontal: 16, borderRadius: 14, padding: 16, alignItems: 'center' },
-  phaseIcon     : { fontSize: 30, marginBottom: 6 },
   phasePrompt   : { color: '#fff', fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 10 },
   phaseBarTrack : { height: 4, backgroundColor: '#334155', borderRadius: 2, width: '100%', marginBottom: 6 },
   phaseBarFill  : { height: 4, backgroundColor: '#2563EB', borderRadius: 2 },

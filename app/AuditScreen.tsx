@@ -77,7 +77,7 @@ export default function AuditOverlay({ businessId }: Props) {
     socket.on('audit_reminder', (data: any) => {
       if (data.businessId && data.businessId !== businessId) return;
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      Alert.alert('⏰ Audit Reminder', `${data.hoursRemaining} hours remaining to submit your audit video.`, [{ text: 'OK' }]);
+      Alert.alert('Audit Reminder', `${data.hoursRemaining} hours remaining to submit your audit video.`, [{ text: 'OK' }]);
     });
     return () => { socket.disconnect(); };
   }, [businessId]);
@@ -107,16 +107,16 @@ function AuditAlertScreen({ request, onAccept }: { request: AuditRequest; onAcce
   return (
     <SafeAreaView style={sAlert.safe}>
       <View style={sAlert.container}>
-        <View style={sAlert.iconWrap}><Text style={sAlert.iconText}>🚨</Text></View>
+        <View style={sAlert.iconWrap}><Text style={sAlert.iconText}>!</Text></View>
         <Text style={sAlert.title}>Surprise Audit Requested</Text>
         <Text style={sAlert.bizName}>{request.businessName}</Text>
         <Text style={sAlert.message}>{request.message}</Text>
         <CountdownTimer deadline={request.auditDeadline} />
         <TouchableOpacity style={sAlert.btn} onPress={onAccept}>
-          <Text style={sAlert.btnText}>📷  Start Audit Recording</Text>
+          <Text style={sAlert.btnText}>Start Audit Recording</Text>
         </TouchableOpacity>
         <Text style={sAlert.warning}>
-          ⚠️ You must record at the actual business premises.{'\n'}
+          You must record at the actual business premises.{'\n'}
           Gallery access is disabled for this session.
         </Text>
       </View>
@@ -352,7 +352,7 @@ function AuditCaptureScreen({ request, onComplete }: { request: AuditRequest; on
     <SafeAreaView style={sCapture.safe}>
       <CameraView style={sCapture.flex1} ref={cameraRef} facing="back" mode="video">
         <View style={sCapture.auditBanner}>
-          <Text style={sCapture.auditBannerText}>🔒 AUDIT CAPTURE — {request.sessionId}</Text>
+          <Text style={sCapture.auditBannerText}>AUDIT CAPTURE -- {request.sessionId}</Text>
         </View>
         <View style={sCapture.topBar}>
           <Text style={sCapture.bizName}>{request.businessName}</Text>
@@ -372,11 +372,11 @@ function AuditCaptureScreen({ request, onComplete }: { request: AuditRequest; on
         )}
         {!recording && (
           <View style={sCapture.instructions}>
-            <Text style={sCapture.instrText}>📍 Record the same premises as before</Text>
-            <Text style={sCapture.instrText}>🪧 Show the business signboard clearly</Text>
-            <Text style={sCapture.instrText}>🚫 Gallery access disabled</Text>
+            <Text style={sCapture.instrText}>Record the same premises as before</Text>
+            <Text style={sCapture.instrText}>Show the business signboard clearly</Text>
+            <Text style={sCapture.instrText}>Gallery access disabled</Text>
             {!locPermission && (
-              <Text style={sCapture.instrTextWarn}>⚠️ Location permission missing — GPS won't be captured</Text>
+              <Text style={sCapture.instrTextWarn}>Location permission missing -- GPS will not be captured</Text>
             )}
           </View>
         )}
@@ -405,7 +405,7 @@ function AuditDoneScreen({ onClose }: { onClose: () => void }) {
   return (
     <SafeAreaView style={sDone.safe}>
       <View style={sDone.container}>
-        <Text style={sDone.icon}>✅</Text>
+        <Text style={sDone.icon}>Done</Text>
         <Text style={sDone.title}>Audit Submitted</Text>
         <Text style={sDone.sub}>Visual analysis is running. You will be notified of the result.</Text>
       </View>
@@ -420,7 +420,7 @@ const sAlert = StyleSheet.create({
   safe     : { flex: 1, backgroundColor: '#0F172A' },
   container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   iconWrap : { width: 80, height: 80, borderRadius: 40, backgroundColor: '#7F1D1D', justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
-  iconText : { fontSize: 40 },
+  iconText : { fontSize: 32, color: '#FCA5A5', fontWeight: 'bold' },
   title    : { color: '#FCA5A5', fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 8 },
   bizName  : { color: '#F8FAFC', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 12 },
   message  : { color: '#94A3B8', fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 24 },
@@ -472,7 +472,7 @@ const sCapture = StyleSheet.create({
 const sDone = StyleSheet.create({
   safe     : { flex: 1, backgroundColor: '#0F172A' },
   container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
-  icon     : { fontSize: 64, marginBottom: 20 },
+  icon     : { fontSize: 24, marginBottom: 20, color: '#4ADE80', fontWeight: 'bold' },
   title    : { color: '#F8FAFC', fontSize: 24, fontWeight: 'bold', marginBottom: 10 },
   sub      : { color: '#94A3B8', fontSize: 15, textAlign: 'center', lineHeight: 22 },
 });

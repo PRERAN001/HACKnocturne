@@ -20,21 +20,21 @@ const DOC_TYPES = [
     id      : 'gst_cert',
     title   : 'GST Certificate',
     subtitle: 'Registration certificate or acknowledgement',
-    icon    : '📄',
+    icon    : 'GST',
     required: true,
   },
   {
     id      : 'owner_id',
     title   : 'Owner / Director Photo ID',
     subtitle: 'Aadhaar, PAN, Passport or Driving Licence',
-    icon    : '🪪',
+    icon    : 'ID',
     required: true,
   },
   {
     id      : 'utility',
     title   : 'Address Proof (Optional)',
     subtitle: 'Electricity bill, Lease deed, or Bank statement',
-    icon    : '🏠',
+    icon    : 'ADDR',
     required: false,
   },
 ];
@@ -129,7 +129,7 @@ function DocCard({ doc, uri, onCapture, onRetake }) {
         <View style={s.previewWrap}>
           <Image source={{ uri }} style={s.preview} resizeMode="cover" />
           <View style={s.previewOverlay}>
-            <Text style={s.previewDone}>✓ Captured</Text>
+            <Text style={s.previewDone}>Captured</Text>
             <TouchableOpacity style={s.retakeBtn} onPress={onRetake}>
               <Text style={s.retakeText}>Retake</Text>
             </TouchableOpacity>
@@ -137,7 +137,6 @@ function DocCard({ doc, uri, onCapture, onRetake }) {
         </View>
       ) : (
         <TouchableOpacity style={s.captureBtn} onPress={onCapture} activeOpacity={0.8}>
-          <Text style={s.captureBtnIcon}>📷</Text>
           <Text style={s.captureBtnText}>Capture Document</Text>
         </TouchableOpacity>
       )}
@@ -214,12 +213,12 @@ export default function DocumentScreen({ route, navigation }) {
         <View style={s.summaryCard}>
           <Text style={s.summaryName}>{params.businessName}</Text>
           <Text style={s.summaryId}>{params.idType} · {params.businessId}</Text>
-          <Text style={s.summaryOwner}>👤 {params.ownerName}</Text>
+          <Text style={s.summaryOwner}>{params.ownerName}</Text>
         </View>
 
         {/* Tips */}
         <View style={s.tipsBox}>
-          <Text style={s.tipsTitle}>📸 Photo Tips</Text>
+          <Text style={s.tipsTitle}>Photo Tips</Text>
           <Text style={s.tipItem}>• Ensure document is flat and well-lit</Text>
           <Text style={s.tipItem}>• All four corners must be visible</Text>
           <Text style={s.tipItem}>• Avoid glare, shadows, and blurry shots</Text>
@@ -243,7 +242,7 @@ export default function DocumentScreen({ route, navigation }) {
           disabled={!allRequiredCaptured}
           activeOpacity={0.8}
         >
-          <Text style={s.continueBtnText}>Continue to Live Recording  →</Text>
+          <Text style={s.continueBtnText}>Continue to Live Recording</Text>
         </TouchableOpacity>
 
         {!allRequiredCaptured && (
@@ -288,7 +287,7 @@ const s = StyleSheet.create({
   // Doc cards
   docCard       : { backgroundColor: '#1E293B', borderRadius: 16, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: '#334155' },
   docHeader     : { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 14, gap: 12 },
-  docIcon       : { fontSize: 28, marginTop: 2 },
+  docIcon       : { fontSize: 11, marginTop: 4, color: '#60A5FA', fontWeight: '700', backgroundColor: '#0F172A', width: 36, height: 36, borderRadius: 8, textAlign: 'center', lineHeight: 36, overflow: 'hidden', letterSpacing: 0.5 },
   docTitleRow   : { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 },
   docTitle      : { color: '#F8FAFC', fontSize: 15, fontWeight: '600' },
   reqBadge      : { backgroundColor: '#1E3A5F', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
@@ -298,7 +297,6 @@ const s = StyleSheet.create({
   docSubtitle   : { color: '#475569', fontSize: 12 },
 
   captureBtn    : { backgroundColor: '#0F172A', borderRadius: 10, padding: 16, alignItems: 'center', borderWidth: 2, borderColor: '#334155', borderStyle: 'dashed' },
-  captureBtnIcon: { fontSize: 24, marginBottom: 6 },
   captureBtnText: { color: '#60A5FA', fontSize: 14, fontWeight: '600' },
 
   previewWrap   : { borderRadius: 10, overflow: 'hidden' },
